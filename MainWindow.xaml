@@ -1,520 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Window
     x:Class="f.Wave.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:f.Wave"
     Title="f.Wave">
 
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
+    <!-- Metro rules used here:
+         1. content over chrome: no panels, no borders, no cards
+         2. typography is the UI: huge light lowercase headings
+         3. flat saturated tiles, zero corner radius
+         4. one accent colour per tile, black background
+         5. circle-outline icon buttons instead of text buttons -->
 
-    <Grid Background="#FFF5F5F5" RequestedTheme="Light">
+    <Grid Background="#FF000000" RequestedTheme="Dark">
 
         <Grid.Resources>
-            <!-- Flakesoft palette -->
-            <SolidColorBrush x:Key="FlakeOrange" Color="#FAA602"/>
-            <SolidColorBrush x:Key="FlakeGreen" Color="#41B657"/>
-            <SolidColorBrush x:Key="FlakePink" Color="#F83887"/>
-            <SolidColorBrush x:Key="FlakeBlue" Color="#22B9F5"/>
 
-            <!-- Fluent surfaces -->
-            <SolidColorBrush x:Key="SidebarBrush" Color="#FFF0F0F0"/>
-            <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFFFF"/>
-            <SolidColorBrush x:Key="BorderBrush" Color="#FFE5E5E5"/>
-            <SolidColorBrush x:Key="PrimaryText" Color="#FF242424"/>
-            <SolidColorBrush x:Key="SecondaryText" Color="#FF666666"/>
-            <SolidColorBrush x:Key="TertiaryText" Color="#FF888888"/>
+            <!-- Palette -->
+            <SolidColorBrush x:Key="OrangeBrush" Color="#FFFAA602"/>
+            <SolidColorBrush x:Key="GreenBrush"  Color="#FF41B657"/>
+            <SolidColorBrush x:Key="PinkBrush"   Color="#FFF83887"/>
+            <SolidColorBrush x:Key="BlueBrush"   Color="#FF22B9F5"/>
+            <SolidColorBrush x:Key="DimBrush"    Color="#FF8A8A8A"/>
+
+            <!-- One font key so you can swap it in one place.
+                 To bundle a custom font: ms-appx:///Assets/Fonts/YourFont.ttf#Font Name -->
+            <FontFamily x:Key="MetroFont">Segoe UI</FontFamily>
+
+            <!-- Visualizer bar -->
+            <Style x:Key="BarStyle" TargetType="Border">
+                <Setter Property="VerticalAlignment" Value="Bottom"/>
+                <Setter Property="Margin" Value="0,0,4,0"/>
+            </Style>
+
+            <!-- Flat tile: no rounded corners, no theme hover colours, slight squash on press -->
+            <Style x:Key="MetroTileStyle" TargetType="Button">
+                <Setter Property="FontFamily" Value="{StaticResource MetroFont}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Padding" Value="16,14"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="VerticalContentAlignment" Value="Bottom"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="Root"
+                                  Background="{TemplateBinding Background}"
+                                  RenderTransformOrigin="0.5,0.5">
+                                <Grid.RenderTransform>
+                                    <ScaleTransform x:Name="Squash" ScaleX="1" ScaleY="1"/>
+                                </Grid.RenderTransform>
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal"/>
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.Opacity" Value="0.88"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="Squash.ScaleX" Value="0.97"/>
+                                                <Setter Target="Squash.ScaleY" Value="0.97"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="Root.Opacity" Value="0.4"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
+                                <ContentPresenter
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Circle outline icon button (the classic Metro app-bar button) -->
+            <Style x:Key="MetroCircleButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="68"/>
+                <Setter Property="Height" Value="68"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal"/>
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="Ring.Fill" Value="#33FFFFFF"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="Ring.Fill" Value="#99FFFFFF"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="Ring.Opacity" Value="0.35"/>
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+
+                                <Ellipse x:Name="Ring"
+                                         Stroke="{TemplateBinding Foreground}"
+                                         StrokeThickness="2"
+                                         Fill="Transparent"/>
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </Grid.Resources>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid Margin="36,18,36,24">
 
-        <!-- Sidebar -->
-        <Border
-            Grid.Column="0"
-            Background="{StaticResource SidebarBrush}"
-            BorderBrush="{StaticResource BorderBrush}"
-            BorderThickness="0,0,1,0">
+            <!-- Pivot gives you the real Metro header/title pattern and the page switching for free -->
+            <Pivot>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="76"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="65"/>
-                </Grid.RowDefinitions>
+                <Pivot.Resources>
+                    <SolidColorBrush x:Key="PivotHeaderForegroundSelectedBrush"   Color="#FFFFFFFF"/>
+                    <SolidColorBrush x:Key="PivotHeaderForegroundUnselectedBrush" Color="#FF5C5C5C"/>
+                </Pivot.Resources>
 
-                <!-- Brand -->
-                <StackPanel
-                    Grid.Row="0"
-                    Orientation="Horizontal"
-                    Spacing="11"
-                    VerticalAlignment="Center"
-                    Margin="22,0">
+                <Pivot.Title>
+                    <TextBlock Text="F.WAVE  ·  FLAKESOFT"
+                               FontFamily="{StaticResource MetroFont}"
+                               FontSize="12"
+                               CharacterSpacing="200"
+                               Foreground="{StaticResource DimBrush}"
+                               Margin="12,0,0,6"/>
+                </Pivot.Title>
 
-                    <Border
-                        Width="34"
-                        Height="34"
-                        Background="{StaticResource FlakeOrange}"
-                        CornerRadius="8">
+                <Pivot.HeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding}"
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="40"
+                                   FontWeight="Light"/>
+                    </DataTemplate>
+                </Pivot.HeaderTemplate>
 
-                        <FontIcon
-                            Glyph="&#xE768;"
-                            FontSize="19"
-                            Foreground="White"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"/>
-                    </Border>
-
-                    <TextBlock
-                        Text="f.Wave"
-                        FontSize="19"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource PrimaryText}"
-                        VerticalAlignment="Center"/>
-                </StackPanel>
-
-                <!-- Navigation -->
-                <StackPanel
-                    Grid.Row="1"
-                    Spacing="5"
-                    Margin="12,15,12,0">
-
-                    <Border
-                        Background="#FFFFEFCB"
-                        CornerRadius="5"
-                        Padding="11,10">
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="27"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <FontIcon
-                                Glyph="&#xE80F;"
-                                FontSize="17"
-                                Foreground="#FF8A5900"
-                                VerticalAlignment="Center"/>
-
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="Overview"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource PrimaryText}"
-                                VerticalAlignment="Center"/>
-                        </Grid>
-                    </Border>
-
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="11,10"
-                        HorizontalContentAlignment="Stretch">
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="27"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <FontIcon
-                                Glyph="&#xE790;"
-                                FontSize="17"
-                                Foreground="{StaticResource SecondaryText}"
-                                VerticalAlignment="Center"/>
-
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="Appearance"
-                                FontSize="14"
-                                Foreground="{StaticResource PrimaryText}"
-                                VerticalAlignment="Center"/>
-                        </Grid>
-                    </Button>
-
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Padding="11,10"
-                        HorizontalContentAlignment="Stretch">
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="27"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <FontIcon
-                                Glyph="&#xE9E9;"
-                                FontSize="17"
-                                Foreground="{StaticResource SecondaryText}"
-                                VerticalAlignment="Center"/>
-
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="Effects"
-                                FontSize="14"
-                                Foreground="{StaticResource PrimaryText}"
-                                VerticalAlignment="Center"/>
-                        </Grid>
-                    </Button>
-
-                </StackPanel>
-
-                <!-- Settings -->
-                <Button
-                    Grid.Row="2"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    HorizontalAlignment="Stretch"
-                    Margin="12,0"
-                    Padding="11,10"
-                    HorizontalContentAlignment="Stretch">
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="27"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <FontIcon
-                            Glyph="&#xE713;"
-                            FontSize="17"
-                            Foreground="{StaticResource SecondaryText}"
-                            VerticalAlignment="Center"/>
-
-                        <TextBlock
-                            Grid.Column="1"
-                            Text="Settings"
-                            FontSize="14"
-                            Foreground="{StaticResource PrimaryText}"
-                            VerticalAlignment="Center"/>
-                    </Grid>
-                </Button>
-            </Grid>
-        </Border>
-
-        <!-- Main content -->
-        <Grid
-            Grid.Column="1"
-            Margin="36,30,36,25">
-
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- Header -->
-            <Grid
-                Grid.Row="0"
-                Margin="0,0,0,27">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Spacing="4">
-                    <TextBlock
-                        Text="OVERVIEW"
-                        FontSize="11"
-                        FontWeight="SemiBold"
-                        CharacterSpacing="100"
-                        Foreground="{StaticResource TertiaryText}"/>
-
-                    <TextBlock
-                        Text="Overview"
-                        FontSize="30"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource PrimaryText}"/>
-                </StackPanel>
-
-                <Button
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    Padding="11,9">
-
-                    <FontIcon
-                        Glyph="&#xE713;"
-                        FontSize="17"
-                        Foreground="{StaticResource SecondaryText}"/>
-                </Button>
-            </Grid>
-
-            <!-- Main area -->
-            <Grid Grid.Row="1">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.2*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Visualization -->
-                <Border
-                    Grid.Column="0"
-                    Background="{StaticResource SurfaceBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="24"
-                    Margin="0,0,18,0">
-
-                    <Grid>
+                <!-- ================= HOME ================= -->
+                <PivotItem Header="home">
+                    <Grid Margin="12,20,12,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
-                            <TextBlock
-                                Text="Visualization"
-                                FontSize="17"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource PrimaryText}"/>
+                        <!-- Title block -->
+                        <StackPanel Grid.Row="0" Spacing="2">
+                            <TextBlock Text="listen."
+                                       FontFamily="{StaticResource MetroFont}"
+                                       FontSize="72"
+                                       FontWeight="Light"/>
+                            <TextBlock Text="your desktop. your sound."
+                                       FontFamily="{StaticResource MetroFont}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource DimBrush}"/>
+                        </StackPanel>
 
-                            <TextBlock
-                                Text="PREVIEW"
-                                HorizontalAlignment="Right"
-                                FontSize="10"
-                                FontWeight="SemiBold"
-                                CharacterSpacing="80"
-                                Foreground="{StaticResource TertiaryText}"/>
+                        <!-- Visualizer: the bars are created in code (MainWindow.xaml.cs) -->
+                        <Grid x:Name="BarsHost"
+                              Grid.Row="1"
+                              MinHeight="160"
+                              MaxHeight="260"
+                              Margin="0,28,0,20"
+                              VerticalAlignment="Bottom"/>
+
+                        <!-- Tiles -->
+                        <Grid Grid.Row="2" ColumnSpacing="8" Height="128">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    Style="{StaticResource MetroTileStyle}"
+                                    Background="{StaticResource OrangeBrush}"
+                                    VerticalAlignment="Stretch">
+                                <StackPanel>
+                                    <TextBlock Text="source" FontSize="12" Opacity="0.8"/>
+                                    <TextBlock Text="system audio" FontSize="22" FontWeight="Light"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Column="1"
+                                    Style="{StaticResource MetroTileStyle}"
+                                    Background="{StaticResource GreenBrush}"
+                                    VerticalAlignment="Stretch">
+                                <StackPanel>
+                                    <TextBlock Text="device" FontSize="12" Opacity="0.8"/>
+                                    <TextBlock Text="default output" FontSize="22" FontWeight="Light"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Grid.Column="2"
+                                    Style="{StaticResource MetroTileStyle}"
+                                    Background="{StaticResource PinkBrush}"
+                                    VerticalAlignment="Stretch">
+                                <StackPanel>
+                                    <TextBlock Text="style" FontSize="12" Opacity="0.8"/>
+                                    <TextBlock Text="bars" FontSize="22" FontWeight="Light"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
 
-                        <!-- Preview bars -->
-                        <Grid
-                            Grid.Row="1"
-                            Margin="5,20,5,20">
-
-                            <StackPanel
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Spacing="7"
-                                Height="170">
-
-                                <Border Width="6" Height="35"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="57"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="88"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeGreen}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="49"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeGreen}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="115"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakePink}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="145"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakePink}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="78"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeBlue}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="53"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeBlue}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="125"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="158"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="92"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeGreen}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="64"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeGreen}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="132"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakePink}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="85"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakePink}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="46"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeBlue}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="110"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeBlue}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="72"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                                <Border Width="6" Height="42"
-                                    CornerRadius="3"
-                                    Background="{StaticResource FlakeOrange}"
-                                    VerticalAlignment="Bottom"/>
-
-                            </StackPanel>
-                        </Grid>
-
-                        <Grid Grid.Row="2">
-                            <StackPanel
-                                Orientation="Horizontal"
-                                Spacing="8">
-
-                                <Ellipse
-                                    Width="8"
-                                    Height="8"
-                                    Fill="{StaticResource FlakeGreen}"
-                                    VerticalAlignment="Center"/>
-
-                                <TextBlock
-                                    Text="Waiting for system audio"
-                                    FontSize="12"
-                                    Foreground="{StaticResource SecondaryText}"/>
+                        <!-- Action row -->
+                        <Grid Grid.Row="3" Margin="0,22,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                                <Button Style="{StaticResource MetroCircleButtonStyle}"
+                                        AutomationProperties.Name="start or stop listening"
+                                        Click="ListenButton_Click">
+                                    <FontIcon x:Name="ListenIcon" Glyph="&#xE768;" FontSize="24"/>
+                                </Button>
+                                <StackPanel VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock x:Name="ListenLabel"
+                                               Text="start listening"
+                                               FontFamily="{StaticResource MetroFont}"
+                                               FontSize="20"
+                                               FontWeight="Light"/>
+                                    <TextBlock x:Name="StatusText"
+                                               Text="stopped  ·  not capturing"
+                                               FontFamily="{StaticResource MetroFont}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource DimBrush}"/>
+                                </StackPanel>
                             </StackPanel>
 
-                            <TextBlock
-                                Text="INACTIVE"
-                                HorizontalAlignment="Right"
-                                FontSize="10"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource TertiaryText}"/>
+                            <TextBlock Text="v0.1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Bottom"
+                                       FontFamily="{StaticResource MetroFont}"
+                                       FontSize="11"
+                                       Foreground="#FF4A4A4A"/>
                         </Grid>
                     </Grid>
-                </Border>
+                </PivotItem>
 
-                <!-- Controls -->
-                <StackPanel
-                    Grid.Column="1"
-                    Spacing="20">
-
-                    <StackPanel Spacing="5">
-                        <TextBlock
-                            Text="System audio"
-                            FontSize="17"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource PrimaryText}"/>
-
-                        <TextBlock
-                            Text="Audio capture status"
-                            FontSize="12"
-                            Foreground="{StaticResource SecondaryText}"/>
+                <!-- ================= APPEARANCE ================= -->
+                <PivotItem Header="appearance">
+                    <StackPanel Margin="12,20,12,0" Spacing="4">
+                        <TextBlock Text="look."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="72"
+                                   FontWeight="Light"/>
+                        <TextBlock Text="colours, bar width, spacing. coming soon."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource DimBrush}"/>
                     </StackPanel>
+                </PivotItem>
 
-                    <Border
-                        Background="{StaticResource SurfaceBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="17">
-
-                        <StackPanel Spacing="13">
-
-                            <TextBlock
-                                Text="Audio source"
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Foreground="{StaticResource PrimaryText}"/>
-
-                            <TextBlock
-                                Text="Default system output"
-                                FontSize="12"
-                                Foreground="{StaticResource SecondaryText}"/>
-
-                            
-
-                            <TextBlock
-                                Text="No active audio capture"
-                                FontSize="12"
-                                Foreground="{StaticResource TertiaryText}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <StackPanel Spacing="10">
-                        <TextBlock
-                            Text="Visualization"
-                            FontSize="17"
-                            FontWeight="SemiBold"
-                            Foreground="{StaticResource PrimaryText}"/>
-
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Background="{StaticResource FlakeOrange}"
-                            Foreground="#FF242424"
-                            BorderThickness="0"
-                            Padding="14,11"
-                            FontWeight="SemiBold"
-                            Content="Start visualization"
-                            IsEnabled="False"/>
-
-                        <TextBlock
-                            Text="Audio capture is not connected yet."
-                            TextWrapping="Wrap"
-                            FontSize="11"
-                            Foreground="{StaticResource SecondaryText}"/>
+                <!-- ================= EFFECTS ================= -->
+                <PivotItem Header="effects">
+                    <StackPanel Margin="12,20,12,0" Spacing="4">
+                        <TextBlock Text="motion."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="72"
+                                   FontWeight="Light"/>
+                        <TextBlock Text="smoothing, peak hold, glow. coming soon."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource DimBrush}"/>
                     </StackPanel>
+                </PivotItem>
 
-                </StackPanel>
-            </Grid>
+                <!-- ================= SETTINGS ================= -->
+                <PivotItem Header="settings">
+                    <StackPanel Margin="12,20,12,0" Spacing="4">
+                        <TextBlock Text="tune."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="72"
+                                   FontWeight="Light"/>
+                        <TextBlock Text="audio device, startup, about. coming soon."
+                                   FontFamily="{StaticResource MetroFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource DimBrush}"/>
+                    </StackPanel>
+                </PivotItem>
 
-            <!-- Footer -->
-            <Grid
-                Grid.Row="2"
-                Margin="0,20,0,0">
-
-                <TextBlock
-                    Text="f.Wave"
-                    FontSize="12"
-                    Foreground="{StaticResource SecondaryText}"/>
-
-                <TextBlock
-                    Text="The New Flakesoft"
-                    FontSize="12"
-                    Foreground="{StaticResource TertiaryText}"
-                    HorizontalAlignment="Right"/>
-            </Grid>
-
+            </Pivot>
         </Grid>
+
+        <!-- Invisible strip so you can still drag the window by the top edge -->
+        <Grid x:Name="TitleBarDrag"
+              Height="32"
+              VerticalAlignment="Top"
+              Background="Transparent"/>
     </Grid>
 </Window>
