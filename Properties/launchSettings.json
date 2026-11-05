@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "f.Wave (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "f.Wave (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
