@@ -1,3 +1,4 @@
+// f.Wave build 3 - file 2 of 4: MainWindow.xaml.cs
 using System;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -15,6 +16,7 @@ namespace f.Wave
         private readonly Border[] _bars = new Border[BarCount];
         private readonly AudioAnalyzer _analyzer = new AudioAnalyzer(BarCount);
         private readonly DispatcherTimer _timer = new DispatcherTimer();
+        private OverlayWindow _overlay;
         private bool _listening;
 
         public MainWindow()
@@ -32,6 +34,13 @@ namespace f.Wave
             {
                 _timer.Stop();
                 _analyzer.Dispose();
+
+                if (_overlay != null)
+                {
+                    _overlay.Closed -= OnOverlayClosed;
+                    _overlay.Close();
+                    _overlay = null;
+                }
             };
         }
 
@@ -84,12 +93,51 @@ namespace f.Wave
             }
         }
 
+        // ---------------------------------------------------------------------
+        //  Buttons
+        // ---------------------------------------------------------------------
         private void ListenButton_Click(object sender, RoutedEventArgs e)
         {
             if (_listening) StopListening();
             else StartListening();
         }
 
+        // The pink tile: turns the screen-edge overlay on and off.
+        private void OverlayTile_Click(object sender, RoutedEventArgs e)
+        {
+            if (_overlay != null)
+            {
+                _overlay.Close(); // OnOverlayClosed resets the tile
+                return;
+            }
+
+            try
+            {
+                _overlay = new OverlayWindow();
+                _overlay.Closed += OnOverlayClosed;
+                _overlay.Activate();
+                OverlayValue.Text = "on";
+
+                if (!_listening)
+                    StartListening();
+            }
+            catch (Exception ex)
+            {
+                _overlay = null;
+                OverlayValue.Text = "off";
+                StatusText.Text = "overlay failed  ·  " + ex.Message.ToLowerInvariant();
+            }
+        }
+
+        private void OnOverlayClosed(object sender, WindowEventArgs args)
+        {
+            _overlay = null;
+            OverlayValue.Text = "off";
+        }
+
+        // ---------------------------------------------------------------------
+        //  Start / stop
+        // ---------------------------------------------------------------------
         private void StartListening()
         {
             try
@@ -118,6 +166,8 @@ namespace f.Wave
             foreach (var bar in _bars)
                 bar.Height = MinBarHeight;
 
+            _overlay?.Clear();
+
             ListenIcon.Glyph = "\uE768";               // play icon
             ListenLabel.Text = "start listening";
             StatusText.Text = status;
@@ -137,6 +187,8 @@ namespace f.Wave
 
             for (int i = 0; i < BarCount; i++)
                 _bars[i].Height = Math.Max(MinBarHeight, levels[i] * height);
+
+            _overlay?.Render(levels);
         }
     }
 }

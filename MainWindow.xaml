@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- f.Wave build 3 - file 1 of 4: MainWindow.xaml -->
+
 <Window
     x:Class="f.Wave.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -218,10 +220,11 @@
                             <Button Grid.Column="2"
                                     Style="{StaticResource MetroTileStyle}"
                                     Background="{StaticResource PinkBrush}"
-                                    VerticalAlignment="Stretch">
+                                    VerticalAlignment="Stretch"
+                                    Click="OverlayTile_Click">
                                 <StackPanel>
-                                    <TextBlock Text="style" FontSize="12" Opacity="0.8"/>
-                                    <TextBlock Text="bars" FontSize="22" FontWeight="Light"/>
+                                    <TextBlock Text="screen overlay" FontSize="12" Opacity="0.8"/>
+                                    <TextBlock x:Name="OverlayValue" Text="off" FontSize="22" FontWeight="Light"/>
                                 </StackPanel>
                             </Button>
                         </Grid>

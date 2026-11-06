@@ -1,4 +1,5 @@
-﻿using System;
+﻿// f.Wave build 3 - file 3 of 4: AudioAnalyzer.cs
+using System;
 using System.Diagnostics;
 using NAudio.Wave;
 
