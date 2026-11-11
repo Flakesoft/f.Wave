@@ -59,6 +59,7 @@ namespace f.Wave
 
         private WasapiLoopbackCapture _capture;
         private int _sampleRate, _channels, _bits;
+        private bool _isFloat;
         private int _write;
         private bool _hasData;
         private long _lastDataMs;
@@ -93,15 +94,30 @@ namespace f.Wave
             var capture = new WasapiLoopbackCapture();
             var format = capture.WaveFormat;
 
-            if (format.BitsPerSample != 32 && format.BitsPerSample != 16)
+            bool isPcm = format.Encoding == WaveFormatEncoding.Pcm;
+            bool isFloat = format.Encoding == WaveFormatEncoding.IeeeFloat;
+            if (!isPcm && !isFloat)
             {
                 capture.Dispose();
-                throw new NotSupportedException("unsupported audio format (" + format.BitsPerSample + " bit)");
+                throw new NotSupportedException("unsupported audio format (" + format.Encoding + ")");
+            }
+
+            switch (format.BitsPerSample)
+            {
+                case 8:
+                case 16:
+                case 24:
+                case 32:
+                    break;
+                default:
+                    capture.Dispose();
+                    throw new NotSupportedException("unsupported audio format (" + format.BitsPerSample + " bit)");
             }
 
             _sampleRate = format.SampleRate;
             _channels = format.Channels;
             _bits = format.BitsPerSample;
+            _isFloat = isFloat;
             BuildBands();
 
             lock (_lock)
@@ -156,9 +172,7 @@ namespace f.Wave
                     for (int c = 0; c < _channels; c++)
                     {
                         int o = offset + c * bytesPerSample;
-                        sum += _bits == 32
-                            ? BitConverter.ToSingle(e.Buffer, o)
-                            : BitConverter.ToInt16(e.Buffer, o) / 32768f;
+                        sum += ReadSample(e.Buffer, o, _bits, _isFloat);
                     }
 
                     _ring[_write] = sum / _channels;
@@ -168,6 +182,38 @@ namespace f.Wave
                 _hasData = true;
                 _lastDataMs = _clock.ElapsedMilliseconds;
             }
+        }
+
+        private static float ReadSample(byte[] buffer, int offset, int bits, bool isFloat)
+        {
+            if (isFloat && bits == 32)
+                return BitConverter.ToSingle(buffer, offset);
+
+            switch (bits)
+            {
+                case 8:
+                    return ((sbyte)buffer[offset]) / 128f;
+                case 16:
+                    return BitConverter.ToInt16(buffer, offset) / 32768f;
+                case 24:
+                    return ReadInt24(buffer, offset) / 8388608f;
+                case 32:
+                    return BitConverter.ToInt32(buffer, offset) / 2147483648f;
+                default:
+                    return 0f;
+            }
+        }
+
+        private static float ReadInt24(byte[] buffer, int offset)
+        {
+            int value = buffer[offset] |
+                        (buffer[offset + 1] << 8) |
+                        (buffer[offset + 2] << 16);
+
+            if ((value & 0x00800000) != 0)
+                value |= unchecked((int)0xFF000000);
+
+            return value;
         }
 
         private void OnStopped(object sender, StoppedEventArgs e)
