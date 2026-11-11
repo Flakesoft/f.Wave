@@ -58,11 +58,15 @@ namespace f.Wave
         private readonly ContainerVisual _container;
         private readonly CompositionColorBrush[] _brushes;
         private readonly List<Bar> _bars = new List<Bar>();
+        private readonly WndProcDelegate _windowProc;
+        private IntPtr _originalWindowProc;
         private float _w, _h;
 
         public OverlayWindow()
         {
             Title = "f.Wave overlay";
+            _root.Background = new SolidColorBrush(Colors.Transparent);
+            _windowProc = OverlayWindowProc;
             Content = _root;
 
             // 1. Fully transparent background.
@@ -206,6 +210,9 @@ namespace f.Wave
         private const int WS_EX_LAYERED = 0x00080000;
         private const int WS_EX_NOACTIVATE = 0x08000000;
         private const uint LWA_ALPHA = 0x2;
+        private const int GWL_WNDPROC = -4;
+        private const uint WM_NCHITTEST = 0x0084;
+        private static readonly IntPtr HTTRANSPARENT = new IntPtr(-1);
 
         private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
         private const int DWMWA_BORDER_COLOR = 34;
@@ -216,18 +223,50 @@ namespace f.Wave
         [DllImport("user32.dll", EntryPoint = "SetWindowLongW")]
         private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+        private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+
         [DllImport("user32.dll")]
-        private static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
+        private static extern IntPtr CallWindowProc(IntPtr previous, IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
 
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
-        private static void MakeClickThrough(IntPtr hwnd)
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins margins);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct Margins
+        {
+            public int Left;
+            public int Right;
+            public int Top;
+            public int Bottom;
+        }
+
+        private delegate IntPtr WndProcDelegate(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam);
+
+        private void MakeClickThrough(IntPtr hwnd)
         {
             int ex = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE,
                 ex | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
-            SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
+
+            // Extend the glass frame through the entire client area. Unlike a
+            // color key, this works with a XAML-composed WinUI window.
+            var margins = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+            DwmExtendFrameIntoClientArea(hwnd, ref margins);
+
+            _originalWindowProc = SetWindowLongPtr(
+                hwnd, GWL_WNDPROC, Marshal.GetFunctionPointerForDelegate(_windowProc));
+        }
+
+        private IntPtr OverlayWindowProc(IntPtr hwnd, uint message, IntPtr wParam, IntPtr lParam)
+        {
+            if (message == WM_NCHITTEST)
+                return HTTRANSPARENT;
+
+            return CallWindowProc(_originalWindowProc, hwnd, message, wParam, lParam);
         }
 
         // Windows 11 adds rounded corners and a thin border; we don't want either.
@@ -253,17 +292,29 @@ namespace f.Wave
 
         protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
         {
-            base.OnTargetConnected(connectedTarget, xamlRoot);
+            // SystemBackdrop callbacks are not guaranteed to arrive on the
+            // XAML thread. A Compositor requires a DispatcherQueue on the
+            // calling thread, so create it before calling the base class and
+            // before constructing the Compositor.
+            try
+            {
+                if (DispatcherQueue.GetForCurrentThread() == null)
+                    _dispatcherQueueController = DispatcherQueueController.CreateOnCurrentThread();
 
-            // The callback can run on a thread without a DispatcherQueue.
-            // Initialize one before creating the Windows composition object
-            // required by ICompositionSupportsSystemBackdrop.
-            if (DispatcherQueue.GetForCurrentThread() == null)
-                _dispatcherQueueController = DispatcherQueueController.CreateOnCurrentThread();
+                base.OnTargetConnected(connectedTarget, xamlRoot);
 
-            _compositor ??= new Windows.UI.Composition.Compositor();
-            connectedTarget.SystemBackdrop = _compositor.CreateColorBrush(
-                Windows.UI.Color.FromArgb(0, 0, 0, 0));
+                _compositor ??= new Windows.UI.Composition.Compositor();
+                connectedTarget.SystemBackdrop = _compositor.CreateColorBrush(
+                    Windows.UI.Color.FromArgb(0, 0, 0, 0));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Some Windows builds invoke this callback from a thread on
+                // which a DispatcherQueue cannot be attached. Do not fail
+                // window creation; the overlay remains usable without the
+                // optional backdrop.
+                try { connectedTarget.SystemBackdrop = null; } catch { }
+            }
         }
 
         protected override void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget)
