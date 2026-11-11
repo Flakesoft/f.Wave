@@ -9,26 +9,28 @@
     xmlns:local="using:f.Wave"
     Title="f.Wave">
 
-    <!-- Metro rules used here:
-         1. content over chrome: no panels, no borders, no cards
-         2. typography is the UI: huge light lowercase headings
-         3. flat saturated tiles, zero corner radius
-         4. one accent colour per tile, black background
-         5. circle-outline icon buttons instead of text buttons -->
+    <!-- Metro / Modern UI Rules:
+         1. Clean adaptive canvas (Deep Charcoal for Dark, Luminous Off-White for Light).
+         2. Typography is the UI: huge light lowercase headers, uppercase tracking labels.
+         3. Flat saturated tiles with snappy feedback and zero radius.
+         4. Fully readable contrast in both themes. -->
 
-    <Grid Background="#FF000000" RequestedTheme="Dark">
+    <Grid x:Name="RootShell" Background="#FFF4F4F4" RequestedTheme="Light">
 
         <Grid.Resources>
 
-            <!-- Palette -->
-            <SolidColorBrush x:Key="OrangeBrush" Color="#FFFAA602"/>
-            <SolidColorBrush x:Key="GreenBrush"  Color="#FF41B657"/>
-            <SolidColorBrush x:Key="PinkBrush"   Color="#FFF83887"/>
-            <SolidColorBrush x:Key="BlueBrush"   Color="#FF22B9F5"/>
-            <SolidColorBrush x:Key="DimBrush"    Color="#FF8A8A8A"/>
+            <!-- Adaptive Theme Brushes -->
+            <SolidColorBrush x:Key="CanvasBackground" Color="#FFF4F4F4"/>
+            <SolidColorBrush x:Key="SurfaceBrush"       Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="TextPrimary"      Color="#FF111111"/>
+            <SolidColorBrush x:Key="TextSecondary"    Color="#FF666666"/>
+            <SolidColorBrush x:Key="BorderSubtle"     Color="#FFD2D2D2"/>
 
-            <!-- One font key so you can swap it in one place.
-                 To bundle a custom font: ms-appx:///Assets/Fonts/YourFont.ttf#Font Name -->
+            <!-- Saturated Metro Accents -->
+            <SolidColorBrush x:Key="AccentOrange"     Color="#FFFA6800"/>
+            <SolidColorBrush x:Key="AccentGreen"      Color="#FF1BA1E2"/>
+            <SolidColorBrush x:Key="AccentPink"       Color="#FFE51400"/>
+
             <FontFamily x:Key="MetroFont">Segoe UI</FontFamily>
 
             <!-- Visualizer bar -->
@@ -37,11 +39,43 @@
                 <Setter Property="Margin" Value="0,0,4,0"/>
             </Style>
 
-            <!-- Flat tile: no rounded corners, no theme hover colours, slight squash on press -->
+            <!-- User-Friendly Interactive Command Button -->
+            <Style x:Key="MetroCommandStyle" TargetType="Button">
+                <Setter Property="MinHeight" Value="52"/>
+                <Setter Property="Padding" Value="18,0"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter Foreground="{TemplateBinding Foreground}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Compact adjuster (+ / -) -->
+            <Style x:Key="MetroAdjustStyle" TargetType="Button" BasedOn="{StaticResource MetroCommandStyle}">
+                <Setter Property="Width" Value="52"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="0"/>
+            </Style>
+
+            <!-- Metro Tile Style -->
             <Style x:Key="MetroTileStyle" TargetType="Button">
                 <Setter Property="FontFamily" Value="{StaticResource MetroFont}"/>
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="Padding" Value="16,14"/>
+                <Setter Property="Padding" Value="20,18"/>
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
                 <Setter Property="VerticalContentAlignment" Value="Bottom"/>
@@ -60,18 +94,13 @@
                                         <VisualState x:Name="Normal"/>
                                         <VisualState x:Name="PointerOver">
                                             <VisualState.Setters>
-                                                <Setter Target="Root.Opacity" Value="0.88"/>
+                                                <Setter Target="Root.Opacity" Value="0.92"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <VisualState.Setters>
-                                                <Setter Target="Squash.ScaleX" Value="0.97"/>
-                                                <Setter Target="Squash.ScaleY" Value="0.97"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="Disabled">
-                                            <VisualState.Setters>
-                                                <Setter Target="Root.Opacity" Value="0.4"/>
+                                                <Setter Target="Squash.ScaleX" Value="0.98"/>
+                                                <Setter Target="Squash.ScaleY" Value="0.98"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -87,11 +116,11 @@
                 </Setter>
             </Style>
 
-            <!-- Circle outline icon button (the classic Metro app-bar button) -->
+            <!-- Circular Icon Button -->
             <Style x:Key="MetroCircleButtonStyle" TargetType="Button">
-                <Setter Property="Width" Value="68"/>
-                <Setter Property="Height" Value="68"/>
-                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Width" Value="72"/>
+                <Setter Property="Height" Value="72"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
@@ -101,17 +130,13 @@
                                         <VisualState x:Name="Normal"/>
                                         <VisualState x:Name="PointerOver">
                                             <VisualState.Setters>
-                                                <Setter Target="Ring.Fill" Value="#33FFFFFF"/>
+                                                <Setter Target="Ring.Fill" Value="#11000000"/>
+                                                <Setter Target="Ring.Stroke" Value="{StaticResource AccentOrange}"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <VisualState.Setters>
-                                                <Setter Target="Ring.Fill" Value="#99FFFFFF"/>
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="Disabled">
-                                            <VisualState.Setters>
-                                                <Setter Target="Ring.Opacity" Value="0.35"/>
+                                                <Setter Target="Ring.Fill" Value="#22000000"/>
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -120,7 +145,7 @@
                                 <Ellipse x:Name="Ring"
                                          Stroke="{TemplateBinding Foreground}"
                                          StrokeThickness="2"
-                                         Fill="Transparent"/>
+                                         Fill="{StaticResource SurfaceBrush}"/>
                                 <ContentPresenter HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"/>
                             </Grid>
@@ -129,39 +154,73 @@
                 </Setter>
             </Style>
 
+            <!-- Form Controls -->
+            <Style x:Key="MetroAppearanceComboBoxStyle" TargetType="ComboBox">
+                <Setter Property="MinHeight" Value="52"/>
+                <Setter Property="Padding" Value="14,0"/>
+                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="0"/>
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+
+            <Style x:Key="MetroAppearanceSliderStyle" TargetType="Slider">
+                <Setter Property="MinHeight" Value="32"/>
+                <Setter Property="Foreground" Value="{StaticResource AccentOrange}"/>
+                <Setter Property="Background" Value="{StaticResource BorderSubtle}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="CornerRadius" Value="0"/>
+            </Style>
+
+            <Style x:Key="MetroAppearanceToggleStyle" TargetType="ToggleSwitch">
+                <Setter Property="MinHeight" Value="52"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="OnContent" Value="on"/>
+                <Setter Property="OffContent" Value="off"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+
         </Grid.Resources>
 
-        <Grid Margin="36,18,36,24">
+        <!-- Main Shell Canvas -->
+        <Grid Margin="56,32,56,40" Background="{StaticResource CanvasBackground}">
 
-            <!-- Pivot gives you the real Metro header/title pattern and the page switching for free -->
-            <Pivot>
+            <!-- Windows 8 Pivot / Panorama Container -->
+            <Pivot x:Name="MainPivot">
 
                 <Pivot.Resources>
-                    <SolidColorBrush x:Key="PivotHeaderForegroundSelectedBrush"   Color="#FFFFFFFF"/>
-                    <SolidColorBrush x:Key="PivotHeaderForegroundUnselectedBrush" Color="#FF5C5C5C"/>
+                    <SolidColorBrush x:Key="PivotHeaderForegroundSelectedBrush"   Color="#FF111111"/>
+                    <SolidColorBrush x:Key="PivotHeaderForegroundUnselectedBrush" Color="#FF999999"/>
                 </Pivot.Resources>
 
+                <!-- Subtitle header tag -->
                 <Pivot.Title>
                     <TextBlock Text="F.WAVE  ·  FLAKESOFT"
                                FontFamily="{StaticResource MetroFont}"
-                               FontSize="12"
-                               CharacterSpacing="200"
-                               Foreground="{StaticResource DimBrush}"
-                               Margin="12,0,0,6"/>
+                               FontSize="11"
+                               CharacterSpacing="250"
+                               Foreground="{StaticResource TextSecondary}"
+                               Margin="0,0,0,12"/>
                 </Pivot.Title>
 
+                <!-- Giant lowercase panorama headers -->
                 <Pivot.HeaderTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}"
                                    FontFamily="{StaticResource MetroFont}"
-                                   FontSize="40"
-                                   FontWeight="Light"/>
+                                   FontSize="46"
+                                   FontWeight="Light"
+                                   Foreground="{StaticResource TextPrimary}"/>
                     </DataTemplate>
                 </Pivot.HeaderTemplate>
 
-                <!-- ================= HOME ================= -->
+                <!-- ================= HOME HUB ================= -->
                 <PivotItem Header="home">
-                    <Grid Margin="12,20,12,0">
+                    <Grid Margin="0,20,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -170,27 +229,28 @@
                         </Grid.RowDefinitions>
 
                         <!-- Title block -->
-                        <StackPanel Grid.Row="0" Spacing="2">
+                        <StackPanel Grid.Row="0" Spacing="6">
                             <TextBlock Text="listen."
                                        FontFamily="{StaticResource MetroFont}"
-                                       FontSize="72"
-                                       FontWeight="Light"/>
+                                       FontSize="80"
+                                       FontWeight="Light"
+                                       Foreground="{StaticResource TextPrimary}"/>
                             <TextBlock Text="your desktop. your sound."
                                        FontFamily="{StaticResource MetroFont}"
                                        FontSize="16"
-                                       Foreground="{StaticResource DimBrush}"/>
+                                       Foreground="{StaticResource TextSecondary}"/>
                         </StackPanel>
 
-                        <!-- Visualizer: the bars are created in code (MainWindow.xaml.cs) -->
+                        <!-- Live audio visualizer canvas -->
                         <Grid x:Name="BarsHost"
                               Grid.Row="1"
-                              MinHeight="160"
-                              MaxHeight="260"
-                              Margin="0,28,0,20"
+                              MinHeight="180"
+                              MaxHeight="280"
+                              Margin="0,32,0,32"
                               VerticalAlignment="Bottom"/>
 
-                        <!-- Tiles -->
-                        <Grid Grid.Row="2" ColumnSpacing="8" Height="128">
+                        <!-- Metro Live Tiles -->
+                        <Grid Grid.Row="2" ColumnSpacing="16" Height="140">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -199,55 +259,54 @@
 
                             <Button Grid.Column="0"
                                     Style="{StaticResource MetroTileStyle}"
-                                    Background="{StaticResource OrangeBrush}"
-                                    VerticalAlignment="Stretch">
-                                <StackPanel>
-                                    <TextBlock Text="source" FontSize="12" Opacity="0.8"/>
+                                    Background="{StaticResource AccentOrange}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="SOURCE" FontSize="11" CharacterSpacing="150" Opacity="0.9"/>
                                     <TextBlock Text="system audio" FontSize="22" FontWeight="Light"/>
                                 </StackPanel>
                             </Button>
 
                             <Button Grid.Column="1"
                                     Style="{StaticResource MetroTileStyle}"
-                                    Background="{StaticResource GreenBrush}"
-                                    VerticalAlignment="Stretch">
-                                <StackPanel>
-                                    <TextBlock Text="device" FontSize="12" Opacity="0.8"/>
+                                    Background="{StaticResource AccentGreen}">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="DEVICE" FontSize="11" CharacterSpacing="150" Opacity="0.9"/>
                                     <TextBlock Text="default output" FontSize="22" FontWeight="Light"/>
                                 </StackPanel>
                             </Button>
 
                             <Button Grid.Column="2"
                                     Style="{StaticResource MetroTileStyle}"
-                                    Background="{StaticResource PinkBrush}"
-                                    VerticalAlignment="Stretch"
+                                    Background="{StaticResource AccentPink}"
                                     Click="OverlayTile_Click">
-                                <StackPanel>
-                                    <TextBlock Text="screen overlay" FontSize="12" Opacity="0.8"/>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="SCREEN OVERLAY" FontSize="11" CharacterSpacing="150" Opacity="0.9"/>
                                     <TextBlock x:Name="OverlayValue" Text="off" FontSize="22" FontWeight="Light"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
 
-                        <!-- Action row -->
-                        <Grid Grid.Row="3" Margin="0,22,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
-                                <Button Style="{StaticResource MetroCircleButtonStyle}"
+                        <!-- Action Bar Row -->
+                        <Grid Grid.Row="3" Margin="0,28,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="24" VerticalAlignment="Center">
+                                <Button x:Name="PlayButton"
+                                        Style="{StaticResource MetroCircleButtonStyle}"
                                         AutomationProperties.Name="start or stop listening"
                                         Click="ListenButton_Click">
-                                    <FontIcon x:Name="ListenIcon" Glyph="&#xE768;" FontSize="24"/>
+                                    <FontIcon x:Name="ListenIcon" Glyph="&#xE768;" FontSize="24" Foreground="{StaticResource TextPrimary}"/>
                                 </Button>
                                 <StackPanel VerticalAlignment="Center" Spacing="2">
                                     <TextBlock x:Name="ListenLabel"
                                                Text="start listening"
                                                FontFamily="{StaticResource MetroFont}"
-                                               FontSize="20"
-                                               FontWeight="Light"/>
+                                               FontSize="24"
+                                               FontWeight="Light"
+                                               Foreground="{StaticResource TextPrimary}"/>
                                     <TextBlock x:Name="StatusText"
                                                Text="stopped  ·  not capturing"
                                                FontFamily="{StaticResource MetroFont}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource DimBrush}"/>
+                                               FontSize="13"
+                                               Foreground="{StaticResource TextSecondary}"/>
                                 </StackPanel>
                             </StackPanel>
 
@@ -255,60 +314,203 @@
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Bottom"
                                        FontFamily="{StaticResource MetroFont}"
-                                       FontSize="11"
-                                       Foreground="#FF4A4A4A"/>
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextSecondary}"/>
                         </Grid>
                     </Grid>
                 </PivotItem>
 
-                <!-- ================= APPEARANCE ================= -->
+                <!-- ================= APPEARANCE SCREEN ================= -->
                 <PivotItem Header="appearance">
-                    <StackPanel Margin="12,20,12,0" Spacing="4">
-                        <TextBlock Text="look."
-                                   FontFamily="{StaticResource MetroFont}"
-                                   FontSize="72"
-                                   FontWeight="Light"/>
-                        <TextBlock Text="colours, bar width, spacing. coming soon."
-                                   FontFamily="{StaticResource MetroFont}"
-                                   FontSize="16"
-                                   Foreground="{StaticResource DimBrush}"/>
-                    </StackPanel>
+                    <ScrollViewer Margin="0,20,0,0" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="40">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="look."
+                                           FontFamily="{StaticResource MetroFont}"
+                                           FontSize="80"
+                                           FontWeight="Light"
+                                           Foreground="{StaticResource TextPrimary}"/>
+                                <TextBlock Text="make f.wave yours with clean metro tuning."
+                                           FontFamily="{StaticResource MetroFont}"
+                                           FontSize="16"
+                                           Foreground="{StaticResource TextSecondary}"/>
+                            </StackPanel>
+
+                            <!-- Two-Column Settings Canvas -->
+                            <Grid ColumnSpacing="72">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- COLUMN 1: APP INTERFACE SETTINGS -->
+                                <StackPanel Grid.Column="0" Spacing="32">
+                                    <TextBlock Text="app interface"
+                                               FontFamily="{StaticResource MetroFont}"
+                                               FontSize="28"
+                                               FontWeight="Light"
+                                               Foreground="{StaticResource AccentOrange}"/>
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="THEME" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                        <ComboBox x:Name="ThemeSelector"
+                                                  Style="{StaticResource MetroAppearanceComboBoxStyle}"
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="ThemeSelector_SelectionChanged"
+                                                  HorizontalAlignment="Stretch"
+                                                  Visibility="Collapsed">
+                                            <ComboBoxItem Content="light"/>
+                                            <ComboBoxItem Content="dark"/>
+                                        </ComboBox>
+                                        <Button x:Name="ThemeOptionButton" Style="{StaticResource MetroCommandStyle}" Content="light" Click="ThemeOptionButton_Click"/>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="INTERFACE DENSITY" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                        <ComboBox x:Name="DensitySelector"
+                                                  Style="{StaticResource MetroAppearanceComboBoxStyle}"
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="DensitySelector_SelectionChanged"
+                                                  HorizontalAlignment="Stretch"
+                                                  Visibility="Collapsed">
+                                            <ComboBoxItem Content="comfortable"/>
+                                            <ComboBoxItem Content="compact"/>
+                                        </ComboBox>
+                                        <Button x:Name="DensityOptionButton" Style="{StaticResource MetroCommandStyle}" Content="comfortable" Click="DensityOptionButton_Click"/>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <ToggleSwitch x:Name="StatusToggle"
+                                                      Style="{StaticResource MetroAppearanceToggleStyle}"
+                                                      Header="show status details"
+                                                      IsOn="True"
+                                                      Toggled="StatusToggle_Toggled"
+                                                      Visibility="Collapsed"/>
+                                        <Button x:Name="StatusOptionButton" Style="{StaticResource MetroCommandStyle}" Content="show status details · on" Click="StatusOptionButton_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- COLUMN 2: VISUALIZER PERSONALIZATIONS -->
+                                <StackPanel Grid.Column="1" Spacing="32">
+                                    <TextBlock Text="visualizer personalizations"
+                                               FontFamily="{StaticResource MetroFont}"
+                                               FontSize="28"
+                                               FontWeight="Light"
+                                               Foreground="{StaticResource AccentGreen}"/>
+
+                                    <!-- Live Preview Tile Frame -->
+                                    <StackPanel Spacing="10">
+                                        <Grid>
+                                            <TextBlock Text="LIVE PREVIEW" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="PreviewModeText" Text="smooth movement · on" HorizontalAlignment="Right" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                        </Grid>
+                                        <Grid Height="104" x:Name="PreviewHost" Background="{StaticResource SurfaceBrush}" VerticalAlignment="Bottom"/>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="COLOUR PALETTE" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                        <ComboBox x:Name="PaletteSelector"
+                                                  Style="{StaticResource MetroAppearanceComboBoxStyle}"
+                                                  SelectedIndex="0"
+                                                  HorizontalAlignment="Stretch"
+                                                  Visibility="Collapsed">
+                                            <ComboBoxItem Content="sunset"/>
+                                            <ComboBoxItem Content="ocean"/>
+                                            <ComboBoxItem Content="mono"/>
+                                        </ComboBox>
+                                        <Button x:Name="PaletteOptionButton" Style="{StaticResource MetroCommandStyle}" Content="sunset" Click="PaletteOptionButton_Click"/>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <Grid>
+                                            <TextBlock Text="BAR SPACING" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="SpacingValue" Text="4 px" HorizontalAlignment="Right" FontSize="13" Foreground="{StaticResource TextPrimary}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0" Style="{StaticResource MetroAdjustStyle}" Content="−" Click="SpacingDownButton_Click"/>
+                                            <Slider Grid.Column="1" x:Name="SpacingSlider"
+                                                    Style="{StaticResource MetroAppearanceSliderStyle}"
+                                                    Minimum="0" Maximum="12" Value="4" StepFrequency="1" Visibility="Collapsed" Margin="12,0"/>
+                                            <Button Grid.Column="2" Style="{StaticResource MetroAdjustStyle}" Content="+" Click="SpacingUpButton_Click"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <Grid>
+                                            <TextBlock Text="BAR OPACITY" FontSize="11" CharacterSpacing="150" Foreground="{StaticResource TextSecondary}"/>
+                                            <TextBlock x:Name="OpacityValue" Text="100%" HorizontalAlignment="Right" FontSize="13" Foreground="{StaticResource TextPrimary}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0" Style="{StaticResource MetroAdjustStyle}" Content="−" Click="OpacityDownButton_Click"/>
+                                            <Slider Grid.Column="1" x:Name="OpacitySlider"
+                                                    Style="{StaticResource MetroAppearanceSliderStyle}"
+                                                    Minimum="20" Maximum="100" Value="100" StepFrequency="5" ValueChanged="OpacitySlider_ValueChanged" Visibility="Collapsed" Margin="12,0"/>
+                                            <Button Grid.Column="2" Style="{StaticResource MetroAdjustStyle}" Content="+" Click="OpacityUpButton_Click"/>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="10">
+                                        <ToggleSwitch x:Name="AnimationToggle"
+                                                      Style="{StaticResource MetroAppearanceToggleStyle}"
+                                                      Header="smooth movement"
+                                                      IsOn="True"
+                                                      Toggled="AnimationToggle_Toggled"
+                                                      Visibility="Collapsed"/>
+                                        <Button x:Name="AnimationOptionButton" Style="{StaticResource MetroCommandStyle}" Content="smooth movement · on" Click="AnimationOptionButton_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
                 </PivotItem>
 
                 <!-- ================= EFFECTS ================= -->
                 <PivotItem Header="effects">
-                    <StackPanel Margin="12,20,12,0" Spacing="4">
+                    <StackPanel Margin="0,20,0,0" Spacing="6">
                         <TextBlock Text="motion."
                                    FontFamily="{StaticResource MetroFont}"
-                                   FontSize="72"
-                                   FontWeight="Light"/>
+                                   FontSize="80"
+                                   FontWeight="Light"
+                                   Foreground="{StaticResource TextPrimary}"/>
                         <TextBlock Text="smoothing, peak hold, glow. coming soon."
                                    FontFamily="{StaticResource MetroFont}"
                                    FontSize="16"
-                                   Foreground="{StaticResource DimBrush}"/>
+                                   Foreground="{StaticResource TextSecondary}"/>
                     </StackPanel>
                 </PivotItem>
 
                 <!-- ================= SETTINGS ================= -->
                 <PivotItem Header="settings">
-                    <StackPanel Margin="12,20,12,0" Spacing="4">
+                    <StackPanel Margin="0,20,0,0" Spacing="6">
                         <TextBlock Text="tune."
                                    FontFamily="{StaticResource MetroFont}"
-                                   FontSize="72"
-                                   FontWeight="Light"/>
+                                   FontSize="80"
+                                   FontWeight="Light"
+                                   Foreground="{StaticResource TextPrimary}"/>
                         <TextBlock Text="audio device, startup, about. coming soon."
                                    FontFamily="{StaticResource MetroFont}"
                                    FontSize="16"
-                                   Foreground="{StaticResource DimBrush}"/>
+                                   Foreground="{StaticResource TextSecondary}"/>
                     </StackPanel>
                 </PivotItem>
 
             </Pivot>
         </Grid>
 
-        <!-- Invisible strip so you can still drag the window by the top edge -->
+        <!-- Invisible top-edge window drag strip -->
         <Grid x:Name="TitleBarDrag"
-              Height="32"
+              Height="36"
               VerticalAlignment="Top"
               Background="Transparent"/>
     </Grid>

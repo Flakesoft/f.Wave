@@ -53,7 +53,8 @@ namespace f.Wave
             public float U;      // 0 = centre of edge (bass) ... 1 = corner (treble)
         }
 
-        private readonly Grid _root = new Grid();
+        private readonly Grid _root;
+        private readonly DispatcherQueueController? _dispatcherQueueController;
         private readonly Compositor _compositor;
         private readonly ContainerVisual _container;
         private readonly CompositionColorBrush[] _brushes;
@@ -64,6 +65,14 @@ namespace f.Wave
 
         public OverlayWindow()
         {
+            // WinUI objects must be created only after this thread has a
+            // DispatcherQueue. This is especially important when the overlay
+            // is activated by a packaged deployment.
+            _dispatcherQueueController = DispatcherQueue.GetForCurrentThread() == null
+                ? DispatcherQueueController.CreateOnCurrentThread()
+                : null;
+
+            _root = new Grid();
             Title = "f.Wave overlay";
             _root.Background = new SolidColorBrush(Colors.Transparent);
             _windowProc = OverlayWindowProc;

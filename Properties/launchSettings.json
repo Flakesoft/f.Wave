@@ -1,7 +1,8 @@
 {
   "profiles": {
     "f.Wave (Package)": {
-      "commandName": "MsixPackage"
+      "commandName": "MsixPackage",
+      "alwaysReinstallApp": true
     },
     "f.Wave (Unpackaged)": {
       "commandName": "Project"
